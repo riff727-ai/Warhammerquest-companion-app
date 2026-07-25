@@ -53,29 +53,47 @@ body.launching>.appbar,body.launching>main,body.launching>.bottomnav,body.launch
 @media(max-width:650px){.game-grid,.menu-grid{grid-template-columns:1fr}.game-tile{min-height:180px}.launch-kicker{letter-spacing:.3em}}
 
 </style>
+<script>
+function wqShowLayer(id){
+  var layers=document.querySelectorAll('.launch-layer');
+  for(var i=0;i<layers.length;i++){layers[i].classList.remove('active');}
+  var target=document.getElementById(id);
+  if(target){target.classList.add('active');}
+}
+function wqEnter(){wqShowLayer('gameGate');return false;}
+function wqTitle(){wqShowLayer('titleGate');return false;}
+function wqGames(){document.body.classList.add('launching');wqShowLayer('gameGate');return false;}
+function wqSilver(){
+  var layers=document.querySelectorAll('.launch-layer');
+  for(var i=0;i<layers.length;i++){layers[i].classList.remove('active');}
+  document.body.classList.remove('launching');
+  if(typeof showScreen==='function'){showScreen('silverhome');}
+  return false;
+}
+</script>
 </head>
 <body class="launching">
 <section id="titleGate" class="launch-layer active" aria-label="Warhammer Quest title screen">
   <div class="launch-inner">
     <div class="wq-mark"><span>WARHAMMER</span><strong>QUEST</strong></div>
     <p class="launch-kicker">COMPANION</p>
-    <button id="enterApp" class="launch-button">ENTER</button>
+    <button id="enterApp" class="launch-button" type="button" onclick="return wqEnter();">ENTER</button>
   </div>
 </section>
 <section id="gameGate" class="launch-layer" aria-label="Choose a Warhammer Quest game">
   <div class="game-select-wrap">
-    <button id="backToTitle" class="gate-back">‹ Title</button>
+    <button id="backToTitle" class="gate-back" type="button" onclick="return wqTitle();">‹ Title</button>
     <div class="wq-mark small"><span>WARHAMMER</span><strong>QUEST</strong></div>
     <h1>Choose Your Adventure</h1>
     <div class="game-grid">
-      <button class="game-tile silver" data-game="silver"><span class="game-icon">✦</span><b>Silver Tower</b><small>Enter the shifting labyrinth</small></button>
+      <button class="game-tile silver" type="button" data-game="silver" onclick="return wqSilver();"><span class="game-icon">✦</span><b>Silver Tower</b><small>Enter the shifting labyrinth</small></button>
       <button class="game-tile hammerhal coming" data-coming="Shadows over Hammerhal"><span class="game-icon">⚒</span><b>Shadows over Hammerhal</b><small>Coming soon</small></button>
       <button class="game-tile cursed coming" data-coming="Cursed City"><span class="game-icon">♜</span><b>Cursed City</b><small>Coming soon</small></button>
       <button class="game-tile darkwater coming" data-coming="Darkwater"><span class="game-icon">☠</span><b>Darkwater</b><small>Coming soon</small></button>
     </div>
   </div>
 </section>
-<header class="appbar"><div class="brand"><button id="returnGames" class="sigil" aria-label="Return to game selection">‹</button><div><h1>Warhammer Quest: Silver Tower</h1><small>Companion • saves automatically on this device</small></div></div></header>
+<header class="appbar"><div class="brand"><button id="returnGames" class="sigil" type="button" aria-label="Return to game selection" onclick="return wqGames();">‹</button><div><h1>Warhammer Quest: Silver Tower</h1><small>Companion • saves automatically on this device</small></div></div></header>
 <main>
 <section id="silverhome" class="screen active">
   <div class="silver-hero-panel">
@@ -165,12 +183,6 @@ document.getElementById('clearDie').onclick=()=>{const s=state.heroes[state.sele
 document.addEventListener('input',e=>{if(e.target.id==='heroNotes'){state.heroes[state.selected].notes=e.target.value;save()}if(e.target.id==='partyNotes'){state.partyNotes=e.target.value;save()}if(e.target.id==='campaignName'){state.campaignName=e.target.value;save()}})
 document.getElementById('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='silver-tower-campaign-backup.json';a.click();URL.revokeObjectURL(a.href);toast('Backup exported')}
 document.getElementById('importFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=JSON.parse(r.result);normalize();save();
-function showLaunchLayer(id){document.querySelectorAll('.launch-layer').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active')}
-document.getElementById('enterApp').onclick=()=>showLaunchLayer('gameGate');
-document.getElementById('backToTitle').onclick=()=>showLaunchLayer('titleGate');
-document.getElementById('returnGames').onclick=()=>{document.body.classList.add('launching');showLaunchLayer('gameGate')};
-document.querySelector('[data-game="silver"]').onclick=()=>{document.querySelectorAll('.launch-layer').forEach(x=>x.classList.remove('active'));document.body.classList.remove('launching');showScreen('silverhome')};
-document.querySelectorAll('[data-coming]').forEach(b=>b.onclick=()=>alert(b.dataset.coming+' is prepared as a future game module, but is not playable in this build yet.'));
 
 renderLibrary();renderDetail();renderParty();renderCampaign();toast('Backup imported')}catch{alert('That backup file could not be read.')}};r.readAsText(f)}
 document.getElementById('resetBtn').onclick=()=>{if(confirm('Erase the entire saved campaign on this iPad?')){state=structuredClone(DEFAULT);normalize();save();renderLibrary();renderDetail();renderParty();renderCampaign();toast('Campaign reset')}}
